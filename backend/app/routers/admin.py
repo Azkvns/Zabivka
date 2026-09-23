@@ -120,7 +120,18 @@ def import_catalog(
     db: Session = Depends(get_db),
 ) -> dict[str, int]:
     payload = file.file.read()
-    text = payload.decode("utf-8") if isinstance(payload, bytes) else payload
+    try:
+        text = payload.decode("utf-8") if isinstance(payload, bytes) else payload
+    except UnicodeDecodeError as exc:
+        line = (
+            payload.count(b"\n", 0, exc.start) + 1
+            if isinstance(payload, bytes)
+            else 1
+        )
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail={"line": line, "reason": "file is not valid UTF-8"},
+        ) from exc
     try:
         rows = parse_catalog_csv(text)
     except CsvRowError as exc:

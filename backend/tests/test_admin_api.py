@@ -214,6 +214,43 @@ def test_import_bad_line_4_leaves_catalog_count(client, session: Session):
     assert names == {"Мята", "Ягоды"}
 
 
+def test_import_non_utf8_returns_422_without_db_change(client, session: Session):
+    _add_user(session, "admin", "Admin12345", role="admin")
+    session.commit()
+    _add_tobacco(
+        session,
+        brand="Туман",
+        name="Мята",
+        strength="лёгкая",
+        flavors=("мята",),
+    )
+    session.expire_all()
+    before = _catalog_count(session)
+    token = _login(client, "admin", "Admin12345")
+    # Valid UTF-8 header, then a byte that is invalid in UTF-8 on line 2.
+    payload = "бренд,название,крепость,вкусы\n".encode("utf-8") + b"\xffbad,row,x,y\n"
+
+    response = client.post(
+        "/api/admin/catalog/import",
+        files={"file": ("catalog.csv", payload, "text/csv")},
+        headers=_auth(token),
+    )
+
+    assert response.status_code == 422
+    detail = response.json()["detail"]
+    assert detail["line"] == 2
+    assert "reason" in detail
+    session.expire_all()
+    assert _catalog_count(session) == before
+    names = {
+        row.name
+        for row in session.scalars(
+            select(Tobacco).where(Tobacco.owner_id.is_(None))
+        )
+    }
+    assert names == {"Мята"}
+
+
 def test_reimport_revives_retired_without_new_id(client, session: Session):
     _add_user(session, "admin", "Admin12345", role="admin")
     session.commit()

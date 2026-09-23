@@ -11,7 +11,7 @@
 | Табаки | `GET /api/tobaccos` | Каталог, полка или оба источника |
 | Рулетка | `POST /api/roulette/spin` | Подбор смеси без записи |
 | Смеси | `POST/GET /api/mixes`, `PATCH /api/mixes/{id}` | Сохранение, история, заметка и оценка |
-| Полка | `POST/PATCH/DELETE /api/shelf` | Свои табаки |
+| Полка | `POST /api/shelf`, `PATCH/DELETE /api/shelf/{id}` | Свои табаки |
 | Админ | `POST /api/admin/tobaccos`, `PATCH /api/admin/tobaccos/{id}`, `POST /api/admin/catalog/clear`, `POST /api/admin/catalog/import` | Каталог, очистка и заливка CSV |
 
 Гость крутит только каталог. Полка, смеси и админка требуют Bearer JWT. Очистка каталога принимает `{"confirm":"CLEAR"}`.
