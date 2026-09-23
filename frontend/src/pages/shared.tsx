@@ -1,5 +1,18 @@
 import { type FormEvent } from 'react'
-import { type TobaccoIn } from '../api'
+import { type Source, type SpinMode, type TobaccoIn } from '../api'
+
+export const SPIN_MODE_OPTIONS: { value: SpinMode; label: string }[] = [
+  { value: 'random', label: 'Случайно' },
+  { value: 'different_flavors', label: 'Разные вкусы' },
+  { value: 'softer', label: 'Мягче' },
+  { value: 'stronger', label: 'Крепче' },
+]
+
+export const SOURCE_OPTIONS: { value: Source; label: string }[] = [
+  { value: 'catalog', label: 'каталог' },
+  { value: 'both', label: 'каталог и полка' },
+  { value: 'shelf', label: 'полка' },
+]
 
 export const FLAVORS = [
   'ягоды',
