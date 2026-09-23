@@ -31,8 +31,8 @@ export default function AdminPage() {
 
   if (!admin) {
     return (
-      <section>
-        <h1>Админка</h1>
+      <section className="stack" aria-labelledby="admin-title">
+        <h1 id="admin-title">Админка</h1>
         <p className="muted">Недостаточно прав для действий с каталогом.</p>
       </section>
     )
@@ -84,18 +84,20 @@ export default function AdminPage() {
   }
 
   return (
-    <section>
-      <h1>Админка</h1>
+    <section className="stack" aria-labelledby="admin-title">
+      <h1 id="admin-title">Админка</h1>
       {error ? <p className="error">{error}</p> : null}
-      {info ? <p>{info}</p> : null}
-      <ul>
-        {rows.map((item) => (
-          <li key={item.id}>
-            {item.brand} — {item.name} ({item.strength}, {item.flavors.join(', ')})
-            {item.retired ? ' — снят с каталога' : ''}
-          </li>
-        ))}
-      </ul>
+      {info ? <p className="meta">{info}</p> : null}
+      <article className="card">
+        <ul>
+          {rows.map((item) => (
+            <li key={item.id}>
+              {item.brand} — {item.name} ({item.strength}, {item.flavors.join(', ')})
+              {item.retired ? ' — снят с каталога' : ''}
+            </li>
+          ))}
+        </ul>
+      </article>
       <TobaccoForm
         title="Новый общий табак"
         value={form}
@@ -103,18 +105,20 @@ export default function AdminPage() {
         onSubmit={onCreate}
         submitLabel="Добавить в каталог"
       />
-      <div className="card">
-        <button type="button" onClick={onClear}>
+      <div className="card stack">
+        <button type="button" className="btn btn-secondary" onClick={onClear}>
           Очистить каталог
         </button>
-        <label>
-          CSV
+        <div className="field">
+          <label htmlFor="admin-csv-import">CSV</label>
           <input
+            id="admin-csv-import"
+            className="input"
             type="file"
             accept=".csv,text/csv"
             onChange={(event) => onImport(event.target.files?.[0])}
           />
-        </label>
+        </div>
       </div>
     </section>
   )
