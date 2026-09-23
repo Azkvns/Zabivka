@@ -1,7 +1,6 @@
 # Забивка
 
 [![test](https://github.com/Azkvns/Zabivka/actions/workflows/test.yml/badge.svg)](https://github.com/Azkvns/Zabivka/actions/workflows/test.yml)
-[![pages](https://github.com/Azkvns/Zabivka/actions/workflows/pages.yml/badge.svg)](https://github.com/Azkvns/Zabivka/actions/workflows/pages.yml)
 [![license](https://img.shields.io/github/license/Azkvns/Zabivka)](LICENSE)
 [![Maintainability](https://qlty.sh/gh/Azkvns/projects/Zabivka/maintainability.svg)](https://qlty.sh/gh/Azkvns/projects/Zabivka/metrics/code)
 
@@ -16,4 +15,5 @@ make up
 
 Сайт: http://localhost:8080
 
-Ссылка на деплой — URL на Vercel, когда практика будет выложена. Документация: [docs/](docs/).
+Ссылка на деплой — https://frontend-in7fpn6wh-aizek-vens-projects.vercel.app  
+Документация: [docs/](docs/).
