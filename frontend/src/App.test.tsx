@@ -31,6 +31,25 @@ describe('shell', () => {
     expect(screen.getByRole('button', { name: 'Фильтры' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Меню' })).toBeVisible()
   })
+
+  it('marks the closed menu drawer inert and aria-hidden', () => {
+    const { container } = render(<App />)
+
+    const drawer = container.querySelector('nav.menu-drawer')
+    expect(drawer).not.toBeNull()
+    expect(drawer).toHaveAttribute('inert')
+    expect(drawer).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('clears inert on the open menu drawer', async () => {
+    const { container } = render(<App />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Меню' }))
+    const drawer = container.querySelector('nav.menu-drawer')
+    expect(drawer).not.toBeNull()
+    expect(drawer).not.toHaveAttribute('inert')
+    expect(drawer).toHaveAttribute('aria-hidden', 'false')
+  })
 })
 
 describe('roulette', () => {

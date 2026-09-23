@@ -68,6 +68,7 @@ export function MenuDrawer({
       className={`menu-drawer${open ? ' is-open' : ''}`}
       aria-label="Разделы"
       aria-hidden={!open}
+      inert={!open ? true : undefined}
     >
       <div className="row-between">
         <h2>Меню</h2>

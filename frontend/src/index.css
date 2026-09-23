@@ -37,7 +37,28 @@ body {
 button {
   font: inherit;
   cursor: pointer;
-  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in oklch, var(--accent) 40%, var(--border));
+  font-weight: 560;
+  background: var(--btn-fill);
+  color: var(--btn-fg);
+  width: fit-content;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button:hover:not(:disabled):where(
+    :not(.icon-btn):not(.btn-ghost):not(.btn-secondary):not(.menu-link):not(.chip):not(.tab):not(.scrim)
+  ) {
+  background: color-mix(in oklch, var(--btn-fill) 88%, black);
 }
 
 a {
@@ -663,6 +684,7 @@ li button {
 
 @media (prefers-reduced-motion: reduce) {
   .wheel,
+  .wheel-glow,
   .result {
     animation: none;
     transition-duration: 0.01s;
