@@ -4,6 +4,7 @@ import { Link, navigate, usePath } from './nav'
 import AdminPage from './pages/Admin'
 import AuthForm from './pages/Auth'
 import CabinetPage from './pages/Cabinet'
+import OwnTobaccosPage from './pages/OwnTobaccos'
 import RoulettePage from './pages/Roulette'
 import { HeaderActions, MenuDrawer, Toast } from './shell'
 
@@ -73,6 +74,8 @@ function App() {
     )
   } else if (path === '/cabinet') {
     page = <CabinetPage />
+  } else if (path === '/own') {
+    page = <OwnTobaccosPage />
   } else if (path === '/admin') {
     page = <AdminPage />
   }

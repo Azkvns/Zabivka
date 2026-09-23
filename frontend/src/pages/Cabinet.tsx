@@ -1,34 +1,36 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ApiError,
   type Mix,
   type Tobacco,
-  type TobaccoIn,
-  createShelf,
-  deleteShelf,
   isLoggedIn,
   listMixes,
   listTobaccos,
   patchMix,
-  patchShelf,
 } from '../api'
+import {
+  formatMixCreatedAt,
+  mixHeadingNames,
+  mixItemComposition,
+  tobaccoByIdFrom,
+} from '../mixDisplay'
 import { navigate } from '../nav'
-import { TobaccoForm, emptyTobacco, messageFrom } from './shared'
+import { messageFrom } from './shared'
 
 export default function CabinetPage() {
   const [mixes, setMixes] = useState<Mix[]>([])
-  const [shelf, setShelf] = useState<Tobacco[]>([])
+  const [tobaccos, setTobaccos] = useState<Tobacco[]>([])
   const [error, setError] = useState('')
-  const [form, setForm] = useState<TobaccoIn>(emptyTobacco)
-  const [editingId, setEditingId] = useState<number | null>(null)
+
+  const tobaccoMap = useMemo(() => tobaccoByIdFrom(tobaccos), [tobaccos])
 
   async function reload() {
-    const [mixRows, shelfRows] = await Promise.all([
+    const [mixRows, tobaccoRows] = await Promise.all([
       listMixes(),
-      listTobaccos({ source: 'shelf' }),
+      listTobaccos({ source: 'both', include_retired: true }),
     ])
     setMixes(mixRows)
-    setShelf(shelfRows)
+    setTobaccos(tobaccoRows)
   }
 
   useEffect(() => {
@@ -54,102 +56,72 @@ export default function CabinetPage() {
     }
   }
 
-  async function onShelfSubmit(event: FormEvent) {
-    event.preventDefault()
-    setError('')
-    try {
-      if (editingId === null) {
-        await createShelf(form)
-      } else {
-        await patchShelf(editingId, form)
-      }
-      setForm(emptyTobacco())
-      setEditingId(null)
-      await reload()
-    } catch (err) {
-      setError(messageFrom(err))
-    }
-  }
-
-  async function onDelete(id: number) {
-    setError('')
-    try {
-      await deleteShelf(id)
-      await reload()
-    } catch (err) {
-      setError(messageFrom(err))
-    }
-  }
-
   return (
-    <section>
-      <h1>Кабинет</h1>
+    <section className="stack" aria-labelledby="shelf-title">
+      <div className="row-between" style={{ alignItems: 'flex-start' }}>
+        <div>
+          <p className="eyebrow">Кабинет</p>
+          <h1 id="shelf-title">Моя полка</h1>
+        </div>
+        <span className="meta">{mixes.length}</span>
+      </div>
+      <p className="lead">Сохранённые смеси из рулетки.</p>
       {error ? <p className="error">{error}</p> : null}
-      <h2>История</h2>
-      {mixes.length === 0 ? <p className="muted">Пока нет сохранённых смесей</p> : null}
-      {mixes.map((mix) => (
-        <MixCard key={mix.id} mix={mix} onSave={onSaveMixMeta} />
-      ))}
-      <h2>Полка</h2>
-      <ul>
-        {shelf.map((item) => (
-          <li key={item.id}>
-            {item.brand} — {item.name} ({item.strength}, {item.flavors.join(', ')})
-            {item.retired ? <span> снят с каталога</span> : null}
-            <button
-              type="button"
-              onClick={() => {
-                setEditingId(item.id)
-                setForm({
-                  brand: item.brand,
-                  name: item.name,
-                  strength: item.strength,
-                  flavors: item.flavors,
-                })
-              }}
-            >
-              Править
-            </button>
-            <button type="button" onClick={() => onDelete(item.id)}>
-              Удалить
-            </button>
-          </li>
-        ))}
-      </ul>
-      <TobaccoForm
-        title={editingId === null ? 'Добавить на полку' : 'Править табак'}
-        value={form}
-        onChange={setForm}
-        onSubmit={onShelfSubmit}
-        submitLabel={editingId === null ? 'Добавить' : 'Сохранить правку'}
-      />
+      {mixes.length === 0 ? (
+        <div className="shelf-empty card">
+          <p>Пока пусто.</p>
+          <p className="meta" style={{ marginTop: 8 }}>
+            Крутани рулетку и сохрани на полку.
+          </p>
+        </div>
+      ) : (
+        mixes.map((mix) => (
+          <MixCard
+            key={mix.id}
+            mix={mix}
+            tobaccoById={tobaccoMap}
+            onSave={onSaveMixMeta}
+          />
+        ))
+      )}
+      <div className="actions">
+        <button type="button" className="btn btn-primary" onClick={() => navigate('/')}>
+          Крутить ещё
+        </button>
+      </div>
     </section>
   )
 }
 
 function MixCard({
   mix,
+  tobaccoById,
   onSave,
 }: {
   mix: Mix
+  tobaccoById: ReadonlyMap<number, Tobacco>
   onSave: (mix: Mix, note: string, rating: number | null) => Promise<void>
 }) {
   const [note, setNote] = useState(mix.note ?? '')
   const [rating, setRating] = useState(mix.rating ? String(mix.rating) : '')
 
   return (
-    <article className="card">
-      <p>
-        {mix.mode}, {mix.size} табака
-      </p>
-      <ul>
+    <article className="card shelf-card">
+      <div className="row-between">
+        <strong>{mixHeadingNames(mix.items)}</strong>
+        <span className="pill">{mix.size}</span>
+      </div>
+      <ul style={{ listStyle: 'none', padding: '8px 0 0', margin: 0 }}>
         {mix.items.map((item) => (
-          <li key={`${mix.id}-${item.position}`}>
-            {item.name}
+          <li key={`${mix.id}-${item.position}`} className="meta" style={{ margin: '4px 0' }}>
+            {mixItemComposition(item, tobaccoById)}
             {item.retired ? ' — снят с каталога' : ''}
           </li>
         ))}
       </ul>
+      <p className="meta" style={{ marginTop: 10 }}>
+        {formatMixCreatedAt(mix.created_at)}
+      </p>
       <label>
         Заметка
         <input value={note} onChange={(event) => setNote(event.target.value)} />

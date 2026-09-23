@@ -202,6 +202,94 @@ describe('auth tabs', () => {
   })
 })
 
+describe('shelf and own routes', () => {
+  it('redirects a guest from /cabinet to login', async () => {
+    window.history.pushState({}, '', '/cabinet')
+    render(<App />)
+    await waitFor(() => expect(window.location.pathname).toBe('/login'))
+  })
+
+  it('redirects a guest from /own to login', async () => {
+    window.history.pushState({}, '', '/own')
+    render(<App />)
+    await waitFor(() => expect(window.location.pathname).toBe('/login'))
+  })
+
+  it('renders the shelf layout and enriched composition for a signed-in user', async () => {
+    setToken(fakeJwt('user'))
+    window.history.pushState({}, '', '/cabinet')
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse([
+          {
+            id: 1,
+            mode: 'random',
+            size: 2,
+            note: null,
+            rating: null,
+            created_at: '2026-03-15T12:00:00Z',
+            items: [
+              { position: 0, tobacco_id: 10, name: 'Мята', retired: false },
+              { position: 1, tobacco_id: 99, name: 'Старый', retired: true },
+            ],
+          },
+        ]),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse([
+          {
+            id: 10,
+            brand: 'Туман',
+            name: 'Мята',
+            strength: 'лёгкая',
+            flavors: ['мята'],
+            retired: false,
+            owner_id: 1,
+          },
+        ]),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Моя полка' })).toBeVisible()
+    expect(screen.getByText('Сохранённые смеси из рулетки.')).toBeVisible()
+    expect(screen.getByText('Мята + Старый')).toBeVisible()
+    expect(screen.getByText('Туман — Мята · лёгкая')).toBeVisible()
+    expect(screen.getByText(/Старый — снят с каталога/)).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Крутить ещё' })).toBeVisible()
+  })
+
+  it('shows own tobaccos CRUD on /own', async () => {
+    setToken(fakeJwt('user'))
+    window.history.pushState({}, '', '/own')
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        jsonResponse([
+          {
+            id: 3,
+            brand: 'Свой',
+            name: 'Лимон',
+            strength: 'средняя',
+            flavors: ['цитрус'],
+            retired: true,
+            owner_id: 1,
+          },
+        ]),
+      ),
+    )
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: 'Свои табаки' })).toBeVisible()
+    expect(screen.getByText(/Свой — Лимон/)).toBeVisible()
+    expect(screen.getByText('снят с каталога')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Править' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Удалить' })).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Добавить на полку' })).toBeVisible()
+  })
+})
+
 describe('admin route', () => {
   it('hides actions when the role is not admin', async () => {
     setToken(fakeJwt('user'))
