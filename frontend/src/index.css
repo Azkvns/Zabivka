@@ -479,6 +479,10 @@ form.card {
   transform: none;
 }
 
+.sheet[hidden] {
+  display: none;
+}
+
 .sheet-handle {
   width: 40px;
   height: 4px;
