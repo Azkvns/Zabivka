@@ -86,6 +86,10 @@ describe('shell', () => {
     expect(indexCss).not.toContain('390px')
     expect(indexCss).not.toContain('.phone')
     expect(indexCss).not.toContain('.stage')
+
+    const scrimBlock = indexCss.match(/\.scrim\s*\{([^}]+)\}/)?.[1] ?? ''
+    expect(scrimBlock).toContain('width: auto')
+    expect(scrimBlock).toContain('inset: 0')
   })
 })
 
