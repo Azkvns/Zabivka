@@ -16,33 +16,16 @@ router = APIRouter(prefix="/api/tobaccos", tags=["tobaccos"])
 _SOURCES = frozenset({"catalog", "shelf", "both"})
 
 
-class TobaccoOut(BaseModel):
-    id: int
-    brand: str
-    name: str
-    strength: str
-    flavors: list[str]
-    retired: bool
-    owner_id: int | None
-
-
-@router.get("", response_model=list[TobaccoOut])
-def list_tobaccos(
+def visible_tobacco_stmt(
+    *,
     brand: str | None = None,
     flavor: str | None = None,
     strength: str | None = None,
     source: str = "catalog",
     include_retired: bool = False,
-    user: User | None = Depends(get_optional_user),
-    db: Session = Depends(get_db),
-) -> list[TobaccoOut]:
-    if source not in _SOURCES:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail="invalid source")
-    if source in ("shelf", "both") and user is None:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="authentication required")
-    if include_retired and (user is None or user.role != "admin"):
-        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="admin only")
-
+    user: User | None = None,
+):
+    """Catalog/shelf/both pool: brand, flavor, strength, retired, owner visibility."""
     stmt = select(Tobacco).options(selectinload(Tobacco.flavors))
     if not include_retired:
         stmt = stmt.where(Tobacco.retired.is_(False))
@@ -64,8 +47,46 @@ def list_tobaccos(
         stmt = stmt.where(
             or_(Tobacco.owner_id.is_(None), Tobacco.owner_id == user.id)
         )
+    return stmt.order_by(Tobacco.id)
 
-    rows = db.scalars(stmt.order_by(Tobacco.id)).unique().all()
+
+class TobaccoOut(BaseModel):
+    id: int
+    brand: str
+    name: str
+    strength: str
+    flavors: list[str]
+    retired: bool
+    owner_id: int | None
+
+
+@router.get("", response_model=list[TobaccoOut])
+def list_tobaccos(
+    brand: str | None = None,
+    flavor: str | None = None,
+    strength: str | None = None,
+    source: str = "catalog",
+    include_retired: bool = False,
+    user: User | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
+) -> list[TobaccoOut]:
+    if source not in _SOURCES:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail="invalid source")
+    if source in ("shelf", "both") and user is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="authentication required")
+    if include_retired and (user is None or user.role != "admin"):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="admin only")
+
+    rows = db.scalars(
+        visible_tobacco_stmt(
+            brand=brand,
+            flavor=flavor,
+            strength=strength,
+            source=source,
+            include_retired=include_retired,
+            user=user,
+        )
+    ).unique().all()
     return [
         TobaccoOut(
             id=row.id,

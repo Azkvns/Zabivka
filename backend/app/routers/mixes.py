@@ -91,7 +91,7 @@ def create_mix(
         tobacco = db.get(Tobacco, tobacco_id)
         if not _visible_tobacco(tobacco, user):
             raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="tobacco is not available",
             )
         tobaccos.append(tobacco)
