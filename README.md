@@ -15,5 +15,5 @@ make up
 
 Сайт: http://localhost:8080
 
-Ссылка на деплой — https://frontend-in7fpn6wh-aizek-vens-projects.vercel.app  
+Ссылка на деплой — https://frontend-pi-two-f8843vtdze.vercel.app 
 Документация: [docs/](docs/).
