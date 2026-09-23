@@ -15,10 +15,19 @@ export function usePath(): string {
   return path
 }
 
-export function Link({ href, children }: { href: string; children: ReactNode }) {
+export function Link({
+  href,
+  children,
+  className,
+}: {
+  href: string
+  children: ReactNode
+  className?: string
+}) {
   return (
     <a
       href={href}
+      className={className}
       onClick={(event) => {
         event.preventDefault()
         navigate(href)

@@ -23,6 +23,16 @@ afterEach(() => {
   window.history.pushState({}, '', '/')
 })
 
+describe('shell', () => {
+  it('shows the lounge logo and header icon controls', () => {
+    render(<App />)
+
+    expect(screen.getByRole('link', { name: 'Забивка' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Фильтры' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Меню' })).toBeVisible()
+  })
+})
+
 describe('roulette', () => {
   it('hides source for guests and sends catalog', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
