@@ -66,6 +66,13 @@ describe('shell', () => {
     expect(chipBlock).toContain('min-height: 44px')
     expect(chipBlock).toContain('min-width: 44px')
   })
+
+  it('disables mix-card rise when reduced motion is preferred', () => {
+    const reducedMotionBlock =
+      indexCss.match(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n\}/)?.[1] ?? ''
+    expect(reducedMotionBlock).toContain('.result.is-visible')
+    expect(reducedMotionBlock).toContain('animation: none')
+  })
 })
 
 describe('roulette', () => {

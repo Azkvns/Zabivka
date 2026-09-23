@@ -686,7 +686,8 @@ li button {
 @media (prefers-reduced-motion: reduce) {
   .wheel,
   .wheel-glow,
-  .result {
+  .result,
+  .result.is-visible {
     animation: none;
     transition-duration: 0.01s;
   }
