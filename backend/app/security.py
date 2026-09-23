@@ -5,6 +5,9 @@ from __future__ import annotations
 import os
 
 import bcrypt
+import jwt
+
+_JWT_ALG = "HS256"
 
 
 def hash_password(password: str) -> str:
@@ -23,3 +26,11 @@ def get_jwt_secret() -> str:
     if not secret:
         raise RuntimeError("JWT_SECRET is not set")
     return secret
+
+
+def encode_jwt(sub: str, role: str) -> str:
+    return jwt.encode({"sub": sub, "role": role}, get_jwt_secret(), algorithm=_JWT_ALG)
+
+
+def decode_jwt(token: str) -> dict:
+    return jwt.decode(token, get_jwt_secret(), algorithms=[_JWT_ALG])

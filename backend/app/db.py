@@ -19,12 +19,36 @@ def get_database_url() -> str:
     return url
 
 
+_engine = None
+_session_factory = None
+
+
 def get_engine():
-    return create_engine(get_database_url())
+    global _engine
+    if _engine is None:
+        _engine = create_engine(get_database_url())
+    return _engine
 
 
 def get_session_factory(engine=None):
-    return sessionmaker(bind=engine or get_engine())
+    if engine is not None:
+        return sessionmaker(bind=engine)
+    global _session_factory
+    if _session_factory is None:
+        _session_factory = sessionmaker(bind=get_engine())
+    return _session_factory
+
+
+def get_db():
+    session = get_session_factory()()
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 def ensure_seed_users(session: Session) -> None:
