@@ -52,6 +52,7 @@ export default function RoulettePage({
   const [filters, setFilters] = useState<LoungeFilters>(DEFAULT_LOUNGE_FILTERS)
   const [draft, setDraft] = useState<LoungeFilters>(DEFAULT_LOUNGE_FILTERS)
   const [brands, setBrands] = useState<string[]>([])
+  const [brandsError, setBrandsError] = useState('')
   const [result, setResult] = useState<SpinResult | null>(null)
   const [error, setError] = useState('')
   const [spinning, setSpinning] = useState(false)
@@ -68,9 +69,10 @@ export default function RoulettePage({
         unique.sort((a, b) => a.localeCompare(b, 'ru'))
         setBrands(unique)
       })
-      .catch(() => {
+      .catch((err) => {
         if (!cancelled) {
           setBrands([])
+          setBrandsError(messageFrom(err))
         }
       })
     return () => {
@@ -155,7 +157,9 @@ export default function RoulettePage({
         )}
       </div>
 
-      {error ? <p className="error">{error}</p> : null}
+      {brandsError || error ? (
+        <p className="error">{brandsError || error}</p>
+      ) : null}
 
       <div className={`result card${result ? ' is-visible' : ''}`} aria-live="polite">
         {result ? (

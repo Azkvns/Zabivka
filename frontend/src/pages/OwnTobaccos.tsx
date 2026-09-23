@@ -76,6 +76,7 @@ export default function OwnTobaccosPage() {
               {item.retired ? <span> снят с каталога</span> : null}
               <button
                 type="button"
+                className="btn btn-secondary"
                 onClick={() => {
                   setEditingId(item.id)
                   setForm({
@@ -88,7 +89,7 @@ export default function OwnTobaccosPage() {
               >
                 Править
               </button>
-              <button type="button" onClick={() => onDelete(item.id)}>
+              <button type="button" className="btn btn-secondary" onClick={() => onDelete(item.id)}>
                 Удалить
               </button>
             </li>

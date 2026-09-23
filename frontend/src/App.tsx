@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { isAdmin, isLoggedIn, logout } from './api'
 import { Link, navigate, usePath } from './nav'
 import AdminPage from './pages/Admin'
-import AuthForm from './pages/Auth'
+import AuthForm, { AuthDraftProvider } from './pages/Auth'
 import CabinetPage from './pages/Cabinet'
 import OwnTobaccosPage from './pages/OwnTobaccos'
 import RoulettePage from './pages/Roulette'
@@ -81,6 +81,7 @@ function App() {
   }
 
   return (
+    <AuthDraftProvider>
     <div className="stage" data-auth={auth} data-filters-open={filtersOpen || undefined}>
       <div className="phone">
         <header className="topnav">
@@ -108,6 +109,7 @@ function App() {
         <Toast message={toast} />
       </div>
     </div>
+    </AuthDraftProvider>
   )
 }
 

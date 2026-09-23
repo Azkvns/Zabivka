@@ -122,13 +122,23 @@ function MixCard({
       <p className="meta" style={{ marginTop: 10 }}>
         {formatMixCreatedAt(mix.created_at)}
       </p>
-      <label>
-        Заметка
-        <input value={note} onChange={(event) => setNote(event.target.value)} />
-      </label>
-      <label>
-        Оценка
-        <select value={rating} onChange={(event) => setRating(event.target.value)}>
+      <div className="field">
+        <label htmlFor={`mix-${mix.id}-note`}>Заметка</label>
+        <input
+          id={`mix-${mix.id}-note`}
+          className="input"
+          value={note}
+          onChange={(event) => setNote(event.target.value)}
+        />
+      </div>
+      <div className="field">
+        <label htmlFor={`mix-${mix.id}-rating`}>Оценка</label>
+        <select
+          id={`mix-${mix.id}-rating`}
+          className="input"
+          value={rating}
+          onChange={(event) => setRating(event.target.value)}
+        >
           <option value="">нет</option>
           {[1, 2, 3, 4, 5].map((value) => (
             <option key={value} value={value}>
@@ -136,9 +146,10 @@ function MixCard({
             </option>
           ))}
         </select>
-      </label>
+      </div>
       <button
         type="button"
+        className="btn btn-secondary"
         onClick={() => onSave(mix, note, rating === '' ? null : Number(rating))}
       >
         Записать оценку

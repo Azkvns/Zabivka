@@ -1,7 +1,41 @@
-import { useState, type FormEvent } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react'
 import { login, register } from '../api'
 import { Link, navigate } from '../nav'
 import { messageFrom } from './shared'
+
+type AuthDraft = {
+  loginName: string
+  password: string
+  setLoginName: (value: string) => void
+  setPassword: (value: string) => void
+  clear: () => void
+}
+
+const AuthDraftContext = createContext<AuthDraft | null>(null)
+
+export function AuthDraftProvider({ children }: { children: ReactNode }) {
+  const [loginName, setLoginName] = useState('')
+  const [password, setPassword] = useState('')
+
+  function clear() {
+    setLoginName('')
+    setPassword('')
+  }
+
+  return (
+    <AuthDraftContext.Provider
+      value={{ loginName, password, setLoginName, setPassword, clear }}
+    >
+      {children}
+    </AuthDraftContext.Provider>
+  )
+}
 
 export default function AuthForm({
   mode,
@@ -10,8 +44,11 @@ export default function AuthForm({
   mode: 'login' | 'register'
   onAuthed: () => void
 }) {
-  const [loginName, setLoginName] = useState('')
-  const [password, setPassword] = useState('')
+  const draft = useContext(AuthDraftContext)
+  if (!draft) {
+    throw new Error('AuthForm requires AuthDraftProvider')
+  }
+  const { loginName, password, setLoginName, setPassword, clear } = draft
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -24,6 +61,7 @@ export default function AuthForm({
         await register(loginName, password)
       }
       await login(loginName, password)
+      clear()
       onAuthed()
       navigate('/')
     } catch (err) {
