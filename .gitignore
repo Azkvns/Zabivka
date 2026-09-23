@@ -1,0 +1,15 @@
+.report
+.worktrees/
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+dist/
+site/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+coverage/

@@ -1,0 +1,32 @@
+site_name: Забивка
+site_description: Подбор табачных смесей — рулетка, своя полка и каталог
+repo_url: https://github.com/Azkvns/Zabivka
+repo_name: Azkvns/Zabivka
+edit_uri: ""
+
+exclude_docs: |
+  /superpowers/
+
+theme:
+  name: material
+  language: ru
+  features:
+    - navigation.sections
+    - content.code.copy
+
+nav:
+  - Обзор: index.md
+  - Свой сервер: docker.md
+  - API: api.md
+  - Архитектура: architecture.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format

@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-ssr
+*.local
+.git
+.oxlintrc.json
+README.md
+src/**/*.test.ts
+src/**/*.test.tsx
+src/test-setup.ts
