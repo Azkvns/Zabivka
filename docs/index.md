@@ -4,4 +4,4 @@
 
 Клиент — React и Vite. API — FastAPI. Данные — PostgreSQL. На своём сервере три контейнера поднимаются Compose: nginx отдаёт собранный сайт и проксирует `/api`, `/docs` и `/openapi.json` на FastAPI.
 
-Локально: `make up`, сайт на [http://localhost:8080](http://localhost:8080). Как поднять стек — в [своём сервере](docker.md). Контур и сценарии — в [архитектуре](architecture.md). Схема HTTP — в [API](api.md).
+Локально: `make up`, сайт на [http://localhost:8080](http://localhost:8080). Как поднять стек — в [своём сервере](docker.md). Публичная сдача — [Vercel и Render](deploy.md). Контур и сценарии — в [архитектуре](architecture.md). Схема HTTP — в [API](api.md).

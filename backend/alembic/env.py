@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from logging.config import fileConfig
 
 from alembic import context
@@ -20,7 +19,7 @@ target_metadata = Base.metadata
 
 
 def get_url() -> str:
-    return os.environ.get("DATABASE_URL") or get_database_url()
+    return get_database_url()
 
 
 def run_migrations_offline() -> None:
