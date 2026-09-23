@@ -1,45 +1,108 @@
-import { useState, type FormEvent } from 'react'
-import { type Source, type SpinMode, type SpinResult, saveMix, spin } from '../api'
-import { FLAVORS, STRENGTHS, messageFrom } from './shared'
+import { useEffect, useState } from 'react'
+import { type SpinMode, type SpinResult, listTobaccos, saveMix, spin } from '../api'
+import {
+  FiltersSheet,
+  type LoungeFilters,
+} from './FiltersSheet'
+import { SPIN_MODE_OPTIONS, messageFrom } from './shared'
+import { Wheel } from './Wheel'
 
-const MODES: { value: SpinMode; label: string }[] = [
-  { value: 'random', label: 'Случайно' },
-  { value: 'different_flavors', label: 'Разные вкусы' },
-  { value: 'softer', label: 'Мягче' },
-  { value: 'stronger', label: 'Крепче' },
-]
+export const DEFAULT_LOUNGE_FILTERS: LoungeFilters = {
+  count: 2,
+  mode: 'random',
+  brand: '',
+  flavor: '',
+  strength: '',
+  source: 'catalog',
+}
 
-export default function RoulettePage({ loggedIn }: { loggedIn: boolean }) {
-  const [count, setCount] = useState<2 | 3 | 4>(2)
-  const [brand, setBrand] = useState('')
-  const [flavor, setFlavor] = useState('')
-  const [strength, setStrength] = useState('')
-  const [source, setSource] = useState<Source>('catalog')
-  const [mode, setMode] = useState<SpinMode>('random')
+function modeLabel(mode: string): string {
+  return SPIN_MODE_OPTIONS.find((item) => item.value === mode)?.label ?? mode
+}
+
+function filterSummaryTags(filters: LoungeFilters): string[] {
+  const tags: string[] = []
+  if (filters.flavor) {
+    tags.push(filters.flavor)
+  }
+  if (filters.brand) {
+    tags.push(filters.brand)
+  }
+  if (filters.strength) {
+    tags.push(filters.strength)
+  }
+  return tags
+}
+
+function hasActiveFilters(filters: LoungeFilters): boolean {
+  return Boolean(filters.brand || filters.flavor || filters.strength)
+}
+
+export default function RoulettePage({
+  loggedIn,
+  filtersOpen,
+  onFiltersOpenChange,
+  onToast,
+}: {
+  loggedIn: boolean
+  filtersOpen: boolean
+  onFiltersOpenChange: (open: boolean) => void
+  onToast: (message: string) => void
+}) {
+  const [filters, setFilters] = useState<LoungeFilters>(DEFAULT_LOUNGE_FILTERS)
+  const [draft, setDraft] = useState<LoungeFilters>(DEFAULT_LOUNGE_FILTERS)
+  const [brands, setBrands] = useState<string[]>([])
   const [result, setResult] = useState<SpinResult | null>(null)
   const [error, setError] = useState('')
-  const [saved, setSaved] = useState('')
+  const [spinning, setSpinning] = useState(false)
   const [busy, setBusy] = useState(false)
 
-  async function onSpin(event: FormEvent) {
-    event.preventDefault()
+  useEffect(() => {
+    let cancelled = false
+    listTobaccos()
+      .then((items) => {
+        if (cancelled) {
+          return
+        }
+        const unique = [...new Set(items.map((item) => item.brand))]
+        unique.sort((a, b) => a.localeCompare(b, 'ru'))
+        setBrands(unique)
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBrands([])
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (filtersOpen) {
+      setDraft(filters)
+    }
+  }, [filtersOpen, filters])
+
+  async function onSpin() {
     setError('')
-    setSaved('')
     setResult(null)
+    setSpinning(true)
     setBusy(true)
     try {
       const out = await spin({
-        count,
-        mode,
-        brand: brand.trim() || null,
-        flavor: flavor || null,
-        strength: strength || null,
-        source: loggedIn ? source : 'catalog',
+        count: filters.count,
+        mode: filters.mode,
+        brand: filters.brand.trim() || null,
+        flavor: filters.flavor || null,
+        strength: filters.strength || null,
+        source: loggedIn ? filters.source : 'catalog',
       })
       setResult(out)
     } catch (err) {
       setError(messageFrom(err))
     } finally {
+      setSpinning(false)
       setBusy(false)
     }
   }
@@ -52,7 +115,7 @@ export default function RoulettePage({ loggedIn }: { loggedIn: boolean }) {
     setError('')
     try {
       await saveMix(result.mode as SpinMode, result.items.map((item) => item.id))
-      setSaved('Смесь сохранена')
+      onToast('Смесь на полке')
     } catch (err) {
       setError(messageFrom(err))
     } finally {
@@ -60,103 +123,98 @@ export default function RoulettePage({ loggedIn }: { loggedIn: boolean }) {
     }
   }
 
+  function applyFilters() {
+    setFilters(draft)
+    onToast('Фильтры на каталоге')
+    onFiltersOpenChange(false)
+  }
+
+  function resetDraft() {
+    setDraft(DEFAULT_LOUNGE_FILTERS)
+  }
+
+  const summaryTags = filterSummaryTags(filters)
+
   return (
-    <section>
-      <h1>Рулетка</h1>
-      <form className="card" onSubmit={onSpin}>
-        <fieldset>
-          <legend>Число</legend>
-          {([2, 3, 4] as const).map((value) => (
-            <label key={value}>
-              <input
-                type="radio"
-                name="count"
-                value={value}
-                checked={count === value}
-                onChange={() => setCount(value)}
-              />
-              {value}
-            </label>
-          ))}
-        </fieldset>
-        <label>
-          Бренд
-          <input value={brand} onChange={(event) => setBrand(event.target.value)} />
-        </label>
-        <label>
-          Вкус
-          <select value={flavor} onChange={(event) => setFlavor(event.target.value)}>
-            <option value="">любой</option>
-            {FLAVORS.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Крепость
-          <select value={strength} onChange={(event) => setStrength(event.target.value)}>
-            <option value="">любая</option>
-            {STRENGTHS.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </label>
-        {loggedIn ? (
-          <label>
-            Источник
-            <select
-              value={source}
-              onChange={(event) => setSource(event.target.value as Source)}
-            >
-              <option value="catalog">каталог</option>
-              <option value="both">каталог и полка</option>
-              <option value="shelf">полка</option>
-            </select>
-          </label>
+    <section className="view is-active" aria-labelledby="home-title">
+      <p className="eyebrow">Лаунж · рулетка</p>
+      <h1 id="home-title">Крути вкус вечера</h1>
+      <p className="lead">Одна крутка — готовая смесь из двух-трёх нот каталога.</p>
+
+      <Wheel spinning={spinning} />
+
+      <div className="filter-summary" aria-live="polite">
+        {!hasActiveFilters(filters) ? (
+          <span className="meta">Каталог без фильтров</span>
+        ) : (
+          summaryTags.map((tag) => (
+            <span key={tag} className="tag">
+              {tag}
+            </span>
+          ))
+        )}
+      </div>
+
+      {error ? <p className="error">{error}</p> : null}
+
+      <div className={`result card${result ? ' is-visible' : ''}`} aria-live="polite">
+        {result ? (
+          <>
+            <div className="row-between">
+              <span className="pill">Смесь · {result.count}</span>
+              <span className="meta">режим: {modeLabel(result.mode)}</span>
+            </div>
+            <ul className="blend-list" aria-label="Состав смеси">
+              {result.items.map((item) => (
+                <li key={item.id} className="blend-item">
+                  <span>
+                    {item.brand} — {item.name}
+                  </span>
+                  <span className="meta">
+                    {item.strength} · {item.flavors.join(', ')}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
         ) : null}
-        <label>
-          Режим
-          <select
-            value={mode}
-            onChange={(event) => setMode(event.target.value as SpinMode)}
-          >
-            {MODES.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="submit" disabled={busy}>
+      </div>
+
+      <div className="actions">
+        <button type="button" className="btn btn-primary" disabled={busy} onClick={onSpin}>
           Крутить
         </button>
-      </form>
-      {error ? <p className="error">{error}</p> : null}
-      {result ? (
-        <div className="card">
-          <ul aria-label="Состав">
-            {result.items.map((item) => (
-              <li key={item.id}>
-                {item.brand} — {item.name}
-                <span className="muted">
-                  {' '}
-                  {item.strength}, {item.flavors.join(', ')}
-                </span>
-              </li>
-            ))}
-          </ul>
+        <div className="actions-row">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => onFiltersOpenChange(true)}
+          >
+            Фильтры
+          </button>
           {loggedIn ? (
-            <button type="button" onClick={onSave} disabled={busy}>
-              Сохранить
+            <button
+              type="button"
+              className="btn btn-secondary"
+              disabled={!result || busy}
+              onClick={onSave}
+            >
+              Сохранить на полку
             </button>
           ) : null}
-          {saved ? <p>{saved}</p> : null}
         </div>
-      ) : null}
+      </div>
+
+      <FiltersSheet
+        open={filtersOpen}
+        draft={draft}
+        brands={brands}
+        loggedIn={loggedIn}
+        onChange={setDraft}
+        onClose={() => onFiltersOpenChange(false)}
+        onApply={applyFilters}
+        onReset={resetDraft}
+      />
     </section>
   )
 }

@@ -56,7 +56,14 @@ function App() {
     navigate('/')
   }
 
-  let page = <RoulettePage loggedIn={loggedIn} />
+  let page = (
+    <RoulettePage
+      loggedIn={loggedIn}
+      filtersOpen={filtersOpen}
+      onFiltersOpenChange={setFiltersOpen}
+      onToast={setToast}
+    />
+  )
   if (path === '/login') {
     page = <AuthForm mode="login" onAuthed={refreshAuth} />
   } else if (path === '/register') {

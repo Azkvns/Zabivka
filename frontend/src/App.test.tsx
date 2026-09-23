@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
@@ -33,11 +33,13 @@ afterEach(() => {
 
 describe('shell', () => {
   it('shows the lounge logo and header icon controls', () => {
-    render(<App />)
+    const { container } = render(<App />)
+    const topnav = container.querySelector('.topnav')
+    expect(topnav).not.toBeNull()
 
     expect(screen.getByRole('link', { name: 'Забивка' })).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Фильтры' })).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Меню' })).toBeVisible()
+    expect(within(topnav as HTMLElement).getByRole('button', { name: 'Фильтры' })).toBeVisible()
+    expect(within(topnav as HTMLElement).getByRole('button', { name: 'Меню' })).toBeVisible()
   })
 
   it('marks the closed menu drawer inert and aria-hidden', () => {
@@ -86,9 +88,13 @@ describe('roulette', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Крутить' }))
     await screen.findByText('Туман — Мята')
 
-    const body = JSON.parse(fetchMock.mock.calls[0][1].body as string) as { source: string }
+    const spinCall = fetchMock.mock.calls.find(
+      (call) => call[1] && typeof call[1] === 'object' && 'body' in call[1],
+    )
+    expect(spinCall).toBeDefined()
+    const body = JSON.parse(spinCall![1].body as string) as { source: string }
     expect(body.source).toBe('catalog')
-    expect(screen.queryByRole('button', { name: 'Сохранить' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Сохранить на полку' })).toBeNull()
   })
 
   it('shows the exact narrow phrase and does not render a composition', async () => {
@@ -102,14 +108,15 @@ describe('roulette', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Крутить' }))
     await screen.findByText('Выборка слишком узкая')
-    expect(screen.queryByRole('list', { name: 'Состав' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Сохранить' })).toBeNull()
+    expect(screen.queryByRole('list', { name: 'Состав смеси' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Сохранить на полку' })).toBeNull()
   })
 
   it('lets a signed-in user choose source and save a mix', async () => {
     setToken(fakeJwt('user'))
     const fetchMock = vi
       .fn()
+      .mockResolvedValueOnce(jsonResponse([]))
       .mockResolvedValueOnce(
         jsonResponse({
           mode: 'random',
@@ -134,12 +141,13 @@ describe('roulette', () => {
     vi.stubGlobal('fetch', fetchMock)
     render(<App />)
 
-    expect(screen.getByLabelText('Источник')).toBeVisible()
+    await userEvent.click(screen.getAllByRole('button', { name: 'Фильтры' })[0])
+    expect(screen.getByRole('group', { name: 'Источник' })).toBeVisible()
     await userEvent.click(screen.getByRole('button', { name: 'Крутить' }))
-    const save = await screen.findByRole('button', { name: 'Сохранить' })
+    const save = await screen.findByRole('button', { name: 'Сохранить на полку' })
     await userEvent.click(save)
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
-    const saveBody = JSON.parse(fetchMock.mock.calls[1][1].body as string) as {
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3))
+    const saveBody = JSON.parse(fetchMock.mock.calls[2][1].body as string) as {
       tobacco_ids: number[]
     }
     expect(saveBody.tobacco_ids).toEqual([1, 2])
