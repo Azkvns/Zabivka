@@ -27,7 +27,7 @@ export default function CabinetPage() {
   async function reload() {
     const [mixRows, tobaccoRows] = await Promise.all([
       listMixes(),
-      listTobaccos({ source: 'both', include_retired: true }),
+      listTobaccos({ source: 'both' }),
     ])
     setMixes(mixRows)
     setTobaccos(tobaccoRows)

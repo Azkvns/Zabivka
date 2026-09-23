@@ -258,6 +258,10 @@ describe('shelf and own routes', () => {
     expect(screen.getByText('Туман — Мята · лёгкая')).toBeVisible()
     expect(screen.getByText(/Старый — снят с каталога/)).toBeVisible()
     expect(screen.getByRole('button', { name: 'Крутить ещё' })).toBeVisible()
+
+    const tobaccoUrl = fetchMock.mock.calls[1][0] as string
+    expect(tobaccoUrl).toContain('source=both')
+    expect(tobaccoUrl).not.toContain('include_retired')
   })
 
   it('shows own tobaccos CRUD on /own', async () => {
