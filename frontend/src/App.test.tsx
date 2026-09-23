@@ -1,8 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import App from './App'
 import { setToken } from './api'
+
+const indexCss = readFileSync(
+  join(dirname(fileURLToPath(import.meta.url)), 'index.css'),
+  'utf8',
+)
 
 function fakeJwt(role: string): string {
   const header = btoa(JSON.stringify({ alg: 'none' }))
@@ -49,6 +57,12 @@ describe('shell', () => {
     expect(drawer).not.toBeNull()
     expect(drawer).not.toHaveAttribute('inert')
     expect(drawer).toHaveAttribute('aria-hidden', 'false')
+  })
+
+  it('chip control meets 44px touch target', () => {
+    const chipBlock = indexCss.match(/\.chip\s*\{([^}]+)\}/)?.[1] ?? ''
+    expect(chipBlock).toContain('min-height: 44px')
+    expect(chipBlock).toContain('min-width: 44px')
   })
 })
 
