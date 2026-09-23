@@ -73,6 +73,20 @@ describe('shell', () => {
     expect(reducedMotionBlock).toContain('.result.is-visible')
     expect(reducedMotionBlock).toContain('animation: none')
   })
+
+  it('fills the viewport instead of a phone frame', () => {
+    const { container } = render(<App />)
+    expect(container.querySelector('.app')).not.toBeNull()
+    expect(container.querySelector('.phone')).toBeNull()
+    expect(container.querySelector('.stage')).toBeNull()
+
+    const appBlock = indexCss.match(/\.app\s*\{([^}]+)\}/)?.[1] ?? ''
+    expect(appBlock).toContain('width: 100%')
+    expect(appBlock).toContain('height: 100dvh')
+    expect(indexCss).not.toContain('390px')
+    expect(indexCss).not.toContain('.phone')
+    expect(indexCss).not.toContain('.stage')
+  })
 })
 
 describe('roulette', () => {

@@ -82,32 +82,30 @@ function App() {
 
   return (
     <AuthDraftProvider>
-    <div className="stage" data-auth={auth} data-filters-open={filtersOpen || undefined}>
-      <div className="phone">
-        <header className="topnav">
-          <Link href="/" className="logo">
-            Забивка
-          </Link>
-          <HeaderActions onFilters={handleFilters} onMenu={() => setMenuOpen(true)} />
-        </header>
-        <main>{page}</main>
-        <button
-          type="button"
-          className={`scrim${menuOpen ? ' is-on' : ''}`}
-          aria-hidden={!menuOpen}
-          tabIndex={menuOpen ? 0 : -1}
-          onClick={closeOverlays}
-        />
-        <MenuDrawer
-          open={menuOpen}
-          onClose={() => setMenuOpen(false)}
-          loggedIn={loggedIn}
-          admin={admin}
-          onFilters={handleFilters}
-          onLogout={handleLogout}
-        />
-        <Toast message={toast} />
-      </div>
+    <div className="app" data-auth={auth} data-filters-open={filtersOpen || undefined}>
+      <header className="topnav">
+        <Link href="/" className="logo">
+          Забивка
+        </Link>
+        <HeaderActions onFilters={handleFilters} onMenu={() => setMenuOpen(true)} />
+      </header>
+      <main>{page}</main>
+      <button
+        type="button"
+        className={`scrim${menuOpen ? ' is-on' : ''}`}
+        aria-hidden={!menuOpen}
+        tabIndex={menuOpen ? 0 : -1}
+        onClick={closeOverlays}
+      />
+      <MenuDrawer
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        loggedIn={loggedIn}
+        admin={admin}
+        onFilters={handleFilters}
+        onLogout={handleLogout}
+      />
+      <Toast message={toast} />
     </div>
     </AuthDraftProvider>
   )
