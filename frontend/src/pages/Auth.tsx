@@ -34,38 +34,62 @@ export default function AuthForm({
   }
 
   return (
-    <section>
-      <h1>{mode === 'login' ? 'Вход' : 'Регистрация'}</h1>
-      <form className="card" onSubmit={onSubmit}>
-        <label>
-          Логин
+    <section className="stack" aria-labelledby="auth-title">
+      <div>
+        <h1 id="auth-title">Войди, чтобы копить полку</h1>
+        <p className="lead">Гость крутит каталог. Сохранённые смеси живут после входа.</p>
+      </div>
+      <div className="tabs" role="tablist" aria-label="Режим входа">
+        <button
+          type="button"
+          role="tab"
+          className={mode === 'login' ? 'tab is-on' : 'tab'}
+          aria-selected={mode === 'login'}
+          onClick={() => navigate('/login')}
+        >
+          Вход
+        </button>
+        <button
+          type="button"
+          role="tab"
+          className={mode === 'register' ? 'tab is-on' : 'tab'}
+          aria-selected={mode === 'register'}
+          onClick={() => navigate('/register')}
+        >
+          Регистрация
+        </button>
+      </div>
+      <form className="stack card" onSubmit={onSubmit}>
+        <div className="field">
+          <label htmlFor="auth-login">Логин</label>
           <input
+            id="auth-login"
+            className="input"
             value={loginName}
             autoComplete="username"
             onChange={(event) => setLoginName(event.target.value)}
           />
-        </label>
-        <label>
-          Пароль
+        </div>
+        <div className="field">
+          <label htmlFor="auth-pass">Пароль</label>
           <input
+            id="auth-pass"
+            className="input"
             type="password"
             value={password}
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
             onChange={(event) => setPassword(event.target.value)}
           />
-        </label>
-        <button type="submit" disabled={busy}>
+        </div>
+        <p className="meta">Логин и пароль уходят на сервер.</p>
+        <button type="submit" className="btn btn-primary" disabled={busy}>
           {mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
         </button>
       </form>
       {error ? <p className="error">{error}</p> : null}
-      <p>
-        {mode === 'login' ? (
-          <Link href="/register">Регистрация</Link>
-        ) : (
-          <Link href="/login">Вход</Link>
-        )}
-      </p>
+      <Link href="/" className="btn btn-ghost">
+        ← К рулетке
+      </Link>
     </section>
   )
 }

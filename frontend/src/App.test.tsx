@@ -161,6 +161,47 @@ describe('roulette', () => {
   })
 })
 
+describe('auth tabs', () => {
+  it('shows lounge copy and login tab on /login', () => {
+    window.history.pushState({}, '', '/login')
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: 'Войди, чтобы копить полку' })).toBeVisible()
+    expect(screen.getByText('Гость крутит каталог. Сохранённые смеси живут после входа.')).toBeVisible()
+    expect(screen.getByRole('tablist', { name: 'Режим входа' })).toBeVisible()
+    expect(screen.getByRole('tab', { name: 'Вход' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('button', { name: 'Войти' })).toBeVisible()
+    expect(screen.getByText('Логин и пароль уходят на сервер.')).toBeVisible()
+    expect(screen.getByRole('link', { name: '← К рулетке' })).toHaveAttribute('href', '/')
+  })
+
+  it('switches to register via tab navigation', async () => {
+    window.history.pushState({}, '', '/login')
+    render(<App />)
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Регистрация' }))
+    expect(window.location.pathname).toBe('/register')
+    expect(screen.getByRole('tab', { name: 'Регистрация' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('button', { name: 'Зарегистрироваться' })).toBeVisible()
+  })
+
+  it('surfaces API errors as .error text', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(jsonResponse({ detail: 'Неверный пароль' }, 401)),
+    )
+    window.history.pushState({}, '', '/login')
+    render(<App />)
+
+    await userEvent.type(screen.getByLabelText('Логин'), 'guest')
+    await userEvent.type(screen.getByLabelText('Пароль'), 'wrong')
+    await userEvent.click(screen.getByRole('button', { name: 'Войти' }))
+
+    const error = await screen.findByText('Неверный пароль')
+    expect(error).toHaveClass('error')
+  })
+})
+
 describe('admin route', () => {
   it('hides actions when the role is not admin', async () => {
     setToken(fakeJwt('user'))

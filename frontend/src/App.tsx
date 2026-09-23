@@ -64,10 +64,13 @@ function App() {
       onToast={setToast}
     />
   )
-  if (path === '/login') {
-    page = <AuthForm mode="login" onAuthed={refreshAuth} />
-  } else if (path === '/register') {
-    page = <AuthForm mode="register" onAuthed={refreshAuth} />
+  if (path === '/login' || path === '/register') {
+    page = (
+      <AuthForm
+        mode={path === '/register' ? 'register' : 'login'}
+        onAuthed={refreshAuth}
+      />
+    )
   } else if (path === '/cabinet') {
     page = <CabinetPage />
   } else if (path === '/admin') {
