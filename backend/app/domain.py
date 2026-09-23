@@ -120,7 +120,7 @@ def parse_catalog_csv(text: str) -> list[CatalogRow]:
         if not flavors_cell.strip():
             raise CsvRowError(line_no, "empty flavors")
 
-        flavor_parts = [p.strip() for p in flavors_cell.split(",")]
+        flavor_parts = [p.strip() for p in flavors_cell.split(";")]
         if any(not p for p in flavor_parts):
             raise CsvRowError(line_no, "empty flavor")
         for flavor in flavor_parts:

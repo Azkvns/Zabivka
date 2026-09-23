@@ -117,7 +117,7 @@ def test_parse_catalog_csv_duplicate_brand_name_points_to_second_line():
 def test_parse_catalog_csv_valid_rows():
     text = (
         "бренд,название,крепость,вкусы\n"
-        "Darkside,Cosmo,лёгкая,\"ягоды,мята\"\n"
+        "Darkside,Cosmo,лёгкая,ягоды;мята\n"
         "MustHave,Pineapple,средняя,фрукты\n"
     )
     rows = parse_catalog_csv(text)
